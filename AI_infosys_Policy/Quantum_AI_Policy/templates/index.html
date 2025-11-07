@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PolicyNav - AI Policy Navigation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Define a modern and clean color palette */
+            --bg-light: #f8fafc;
+            --bg-dark: #f1f5f9;
+            --card-bg: #ffffff;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --secondary: #10b981;
+            --secondary-hover: #059669;
+            --tertiary: #f59e0b;
+            --tertiary-hover: #d97706;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-color-light: rgba(79, 70, 229, 0.1);
+            --shadow-color-dark: rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            /* Add a subtle gradient to the background for depth */
+            background-image: linear-gradient(to top, var(--bg-dark), var(--bg-light));
+            margin: 0;
+            padding: 0;
+            color: var(--text-dark);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+            /* Add padding to the top to give it space */
+            padding-top: 4rem;
+        }
+
+        header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 0 0 0.5rem 0;
+            letter-spacing: -1.5px;
+        }
+
+        header h1 span {
+            color: var(--primary);
+        }
+
+        header p {
+            font-size: 1.125rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        /* FIXED: Changed from .button-card to .search-card to match CSS */
+        .search-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            /* Soft, layered box shadow for a modern look */
+            box-shadow: 0 4px 6px -1px var(--shadow-color-dark), 0 2px 4px -2px var(--shadow-color-dark);
+            padding: 2.5rem 2rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .search-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            /* Use variables for a gradient top border on each card */
+            background: linear-gradient(90deg, var(--color-start), var(--color-end));
+        }
+
+        /* Card-specific accent colors for the top border */
+        .search-card:nth-child(1) { --color-start: #a5b4fc; --color-end: var(--primary); }
+        .search-card:nth-child(2) { --color-start: #6ee7b7; --color-end: var(--secondary); }
+        .search-card:nth-child(3) { --color-start: #fcd34d; --color-end: var(--tertiary); }
+
+        .search-card:hover {
+            /* Add a "lift" effect on hover */
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px var(--shadow-color-light), 0 8px 10px -6px var(--shadow-color-light);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 55%;
+            border-radius: 50%;
+        }
+
+        /* Icon styling with unique backgrounds and SVG data URLs */
+        .icon-education {
+             background-color: #e0e7ff;
+             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z'%3E%3C/path%3E%3Cpath d='M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z'%3E%3C/path%3E%3C/svg%3E");
+        }
+        .icon-healthcare {
+            background-color: #d1fae5;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'%3E%3C/path%3E%3C/svg%3E");
+        }
+        .icon-quantum {
+            background-color: #fef3c7;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='4' width='16' height='16' rx='2' ry='2'%3E%3C/rect%3E%3Crect x='9' y='9' width='6' height='6'%3E%3C/rect%3E%3Cline x1='9' y1='1' x2='9' y2='4'%3E%3C/line%3E%3Cline x1='15' y1='1' x2='15' y2='4'%3E%3C/line%3E%3Cline x1='9' y1='20' x2='9' y2='23'%3E%3C/line%3E%3Cline x1='15' y1='20' x2='15' y2='23'%3E%3C/line%3E%3Cline x1='20' y1='9' x2='23' y2='9'%3E%3C/line%3E%3Cline x1='20' y1='14' x2='23' y2='14'%3E%3C/line%3E%3Cline x1='1' y1='9' x2='4' y2='9'%3E%3C/line%3E%3Cline x1='1' y1='14' x2='4' y2='14'%3E%3C/line%3E%3C/svg%3E");
+        }
+
+        .search-card h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--text-dark);
+        }
+
+        .search-card p {
+            color: var(--text-light);
+            line-height: 1.7;
+            flex-grow: 1;
+            font-size: 0.95rem;
+        }
+
+        .search-card form {
+            margin-top: 2rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem 1.75rem;
+            font-size: 1rem;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 14px 0 rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        /* Button specific styling with gradients and hover effects */
+        .btn-primary { background: linear-gradient(45deg, #6366f1, var(--primary)); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.4); }
+
+        .btn-secondary { background: linear-gradient(45deg, #2dd4bf, var(--secondary)); }
+        .btn-secondary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px 0 rgba(45, 212, 191, 0.4); }
+
+        .btn-tertiary { background: linear-gradient(45deg, #fbbf24, var(--tertiary)); }
+        .btn-tertiary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px 0 rgba(251, 191, 36, 0.4); }
+
+        button svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.2s ease;
+        }
+        
+        button:hover svg {
+            transform: translateX(4px);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            header {
+                padding-top: 2rem;
+                margin-bottom: 2rem;
+            }
+            header h1 {
+                font-size: 2.75rem;
+            }
+            header p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>PolicyNav<span>.AI</span></h1>
+        <p>Navigate the complex world of public policy with the power of classical and quantum-enhanced AI search.</p>
+    </header>
+        
+    <div class="container">
+        <div class="card-grid">
+
+            <div class="search-card">
+                <div class="card-header">
+                    <div class="card-icon icon-education"></div>
+                    <h2>Education Policy</h2>
+                </div>
+                <p>Find relevant education policies using a fast and efficient classical AI search model. Ideal for general queries about scholarships, curriculum, and school infrastructure.</p>
+                <form action="/education" method="get">
+                    <input type="hidden" name="category" value="education">
+                    <button type="submit" class="btn-primary">
+                        Search Education
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </button>
+                </form>
+            </div>
+
+            <div class="search-card">
+                <div class="card-header">
+                    <div class="card-icon icon-healthcare"></div>
+                    <h2>Healthcare Policy</h2>
+                </div>
+                <p>Explore healthcare schemes and public health initiatives. This search is optimized for topics like insurance, hospital services, and disease prevention programs.</p>
+                <form action="/healthcare" method="get">
+                    <input type="hidden" name="category" value="healthcare">
+                    <button type="submit" class="btn-secondary">
+                        Search Healthcare
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </button>
+                </form>
+            </div> 
+
+            <div class="search-card">
+                <div class="card-header">
+                    <div class="card-icon icon-quantum"></div>
+                    <h2>Quantum Education</h2>
+                </div>
+                <p>Use a quantum-enhanced algorithm to find nuanced relationships in education policy data. This may provide more relevant results for complex or abstract queries.</p>
+                <form action="/quantum" method="get">
+                    <input type="hidden" name="category" value="quantum">
+                    <button type="submit" class="btn-tertiary">
+                        Quantum Search
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </button>
+                </form>
+            </div>
+            
+        </div> </div> </body>
+</html>

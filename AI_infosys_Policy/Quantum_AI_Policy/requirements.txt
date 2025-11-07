@@ -1,0 +1,24 @@
+# Core Libraries
+
+# Web Frameworks & Servers
+fastapi
+flask
+uvicorn[standard]
+jinja2
+
+# Data Science & Machine Learning
+pandas
+numpy
+scikit-learn
+joblib
+nltk
+
+# Data Visualization
+matplotlib
+seaborn
+
+# Quantum ML
+pennylane
+qiskit
+qiskit-machine-learning
+qiskit-aer

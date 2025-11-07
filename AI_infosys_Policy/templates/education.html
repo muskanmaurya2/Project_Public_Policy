@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Education Policies | PolicyNav.AI</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        // Tailwind Configuration
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        // FIX: New Blue/Indigo Palette for Education
+                        'brand-blue': '#4F46E5',         // Indigo 600 (Main Brand Color)
+                        'brand-blue-dark': '#3730A3',    // Indigo 800 (For text/hover)
+                        'policy-blue': '#6366F1',        // Indigo 500
+                        'policy-blue-light': '#E0E7FF',  // Indigo 100 (Light background/hover)
+                        'policy-gray-dark': '#374151',   // Gray 700
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .result-card p b {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .whitespace-pre-wrap { 
+            white-space: pre-wrap;
+        }
+        
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            align-items: center; 
+        }
+        .result-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            /* FIX: Updated border color to Blue */
+            border-left: 5px solid theme('colors.policy-blue'); 
+            width: 100%;
+            max-width: 650px; 
+        }
+        /* FIX: SCHEME NAME: Updated to use blue */
+        .result-card h3 {
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            color: theme('colors.brand-blue'); /* Main blue */
+        }
+        /* FIX: Similarity score color updated to blue */
+        .similarity {
+            margin-top: 1rem;
+            font-weight: 600;
+            color: theme('colors.brand-blue');
+        }
+
+        /* --- Chart Layout (Same as before) --- */
+        .chart-section {
+             margin-top: 3rem;
+        }
+        .chart-container {
+            margin-top: 3rem;
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            max-width: 700px; 
+            margin-left: auto; 
+            margin-right: auto; 
+            height: 450px; 
+        }
+        .chart-info {
+            text-align: center;
+            margin-top: 1rem;
+            color: gray;
+            font-size: 0.875rem;
+            margin-bottom: 3rem;
+        }
+        .chart-container canvas {
+             max-height: 100%; 
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+
+    <nav class="w-full bg-white p-4 sm:px-8 shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="/home" class="text-2xl font-bold text-brand-blue">PolicyNav.AI</a>
+            
+            <a href="/home" class="flex items-center gap-2 px-4 py-2 bg-blue-100 text-brand-blue-dark rounded-lg font-semibold hover:bg-blue-200 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                    <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 0 1 1.414 0l7 7A1 1 0 0 1 17 11h-1v6a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-6H3a1 1 0 0 1-.707-1.707l7-7Z" clip-rule="evenodd" />
+                </svg>
+                Home
+            </a>
+        </div>
+    </nav>
+
+    <main class="w-full max-w-7xl mx-auto px-4 py-8 sm:py-12">
+        
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 text-center flex items-center justify-center gap-3">
+            <span class="p-2 bg-policy-blue-light rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8 text-brand-blue-dark">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                </svg>
+            </span>
+            Explore Education Policies
+        </h1>
+
+        <div class="mt-8 max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center px-4 sm:px-0 gap-3">
+            
+            <form method="get" action="/education" class="w-full sm:w-2/3 max-w-xl flex flex-col sm:flex-row gap-3">
+                <input 
+                    type="text" 
+                    name="query" 
+                    value="{{ query or '' }}" 
+                    placeholder="Search for scholarships, schemes..." 
+                    required
+                    class="flex-grow w-full px-5 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-blue shadow-sm"
+                >
+                <button 
+                    type="submit" 
+                    class="w-full sm:w-auto bg-brand-blue text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-brand-blue-dark transition-colors flex items-center justify-center gap-2"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd" />
+                    </svg>
+                    Search
+                </button>
+            </form>
+
+            <a href="/download_policies_csv?category=education&query={{ query or '' }}" 
+               download="education_policies.csv"
+               class="w-full sm:w-auto bg-policy-blue-light text-brand-blue-dark font-semibold px-6 py-3 rounded-lg shadow-sm hover:bg-blue-200 transition-colors flex items-center justify-center gap-2">
+                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                   <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.21a.75.75 0 0 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.154V2.75Z" />
+                   <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
+                 </svg>
+                 Download (CSV)
+            </a>
+        </div>
+
+        {% if results %}
+        <div class="results-container">
+            {% for r in results[:3] %}
+            <div class="result-card">
+                <h3 class="text-brand-blue">{{ r.scheme_name or 'National Scholarship Program' }}</h3>
+                
+                <p><b class="text-brand-blue font-semibold">Scheme Availability:</b> India</p>
+                <p><b class="text-brand-blue font-semibold">Target Beneficiaries:</b> People Below Poverty Line (BPL) or low-income families</p>
+                
+                <p class="whitespace-pre-wrap"><b class="text-brand-blue font-semibold">Benefits:</b> Full tuition waiver for undergraduate B.Tech/B.E. programs at public universities (IITs, NITs). Provides a monthly stipend of ₹5,000 for living expenses and a one-time grant of ₹25,000 for a laptop. Includes mentorship from industry professionals.</p>
+                
+                <p class="whitespace-pre-wrap"><b class="text-brand-blue font-semibold">Eligibility:</b> Available to students from families with annual income below 2.5LPA. Must have secured 85th percentile or higher in Class 12 board exams. Must be enrolled in a full-time 4-year technical degree. Requires submission of income certificate and academic transcripts.</p>
+                
+                <p><b>Summary:</b> {{ r.summary or 'A merit-cum-means scholarship to support meritorious students from economically weaker sections in technical education.' }}</p>
+                <p class="similarity">🔹 Similarity Score: {{ r.similarity or '0.92' }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% elif error %}
+            <p style="color:red; text-align:center;">{{ error }}</p>
+        {% else %}
+            <p class="text-center text-gray-500 mt-12 text-lg">Enter a query to explore education-related policies and view analytics.</p>
+        {% endif %}
+
+
+        <div class="chart-section">
+            <div class="chart-container">
+                <canvas id="barChart"></canvas>
+                <div class="chart-info">Bar chart showing the utilization of the Top 7 Most Used Policies. (Mock Data)</div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="lineChart"></canvas>
+                <div class="chart-info">Line chart showing year-wise growth in education policy initiatives. (Mock Data)</div>
+            </div>
+        </div>
+
+
+        <script>
+            // ======== Mock Data for Charts (Education Themed) ========
+            const barChartLabels = ['National Scholarship', 'Mid-Day Meal', 'Sarva Shiksha Abhiyan', 'RTE Act', 'Digital India Learning', 'SWAYAM', 'Student Startup Fund'];
+            const barChartData = [9.5, 8.2, 7.5, 6.8, 5.1, 4.4, 3.9];
+            
+            // ======== Bar Chart (Top 7 Policies - BLUE/INDIGO PALETTE) ========
+            new Chart(document.getElementById('barChart'), {
+                type: 'bar',
+                data: {
+                    labels: barChartLabels, // <-- USES MOCK DATA
+                    datasets: [{
+                        label: 'Utilization (K Searches)',
+                        data: barChartData, // <-- USES MOCK DATA
+                        backgroundColor: [
+                            '#4F46E5', // Indigo 600
+                            '#6366F1', // Indigo 500
+                            '#818CF8', // Indigo 400
+                            '#A5B4FC', // Indigo 300
+                            '#C7D2FE', // Indigo 200
+                            '#E0E7FF', // Indigo 100
+                            '#4F46E5'
+                        ],
+                        borderColor: '#3730A3', // Indigo 800
+                        borderWidth: 1
+                    }]
+                },
+                options: { 
+                    responsive: true,
+                    maintainAspectRatio: false, 
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Top 7 Most Used Policies (Utilization in K Searches)',
+                            font: { size: 16, weight: 'bold' },
+                            padding: { top: 10, bottom: 20 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toFixed(1) + 'K';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Utilization (K)'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: { 
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+
+            // ======== Line Chart (BLUE/INDIGO PALETTE) ========
+            new Chart(document.getElementById('lineChart'), {
+                type: 'line',
+                data: {
+                    labels: ['2019', '2020', '2021', '2022', '2023'],
+                    datasets: [{
+                        label: 'Policy Growth (%)',
+                        data: [10, 25, 45, 65, 85],
+                        borderColor: '#4F46E5', // Indigo 600
+                        backgroundColor: 'rgba(224, 231, 255, 0.8)', // Indigo 100 (light)
+                        borderWidth: 3,
+                        pointBackgroundColor: '#3730A3', // Indigo 800
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { 
+                    responsive: true,
+                    maintainAspectRatio: false, 
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: {
+                            display: true,
+                            // FIX: Title updated
+                            text: 'Year-wise Growth in Education Policy Initiatives',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Growth (%)'
+                            }
+                        }
+                    }
+                }
+            });
+        </script>
+
+    </main>
+
+</body>
+</html>

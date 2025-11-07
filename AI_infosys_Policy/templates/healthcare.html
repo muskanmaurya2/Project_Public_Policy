@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare Policies | PolicyNav.AI</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        // Tailwind Configuration - Updated for Green Palette
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        // New Green/Emerald Palette
+                        'brand-green': '#10B981',      // Emerald 500 (Main Green)
+                        'brand-green-dark': '#065F46', // Emerald 800 (Used for high contrast text/hover)
+                        'policy-green': '#34D399',      // Emerald 400 (Card border)
+                        'policy-green-light': '#D1FAE5', // Emerald 100 (Very light background/hover)
+                        'policy-gray-dark': '#374151', // Gray 700
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* Style for the labels within result cards, ensuring they are green */
+        .result-card p b {
+            display: block;
+            margin-bottom: 5px;
+            color: theme('colors.brand-green'); /* Applied green color to labels */
+        }
+        /* FIX: Ensures long text breaks correctly and preserves line breaks */
+        .whitespace-pre-wrap { 
+            white-space: pre-wrap;
+        }
+        
+        /* --- Policy Card Layout (Updated to stack vertically) --- */
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 3rem; 
+            align-items: center; 
+        }
+        .result-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid theme('colors.policy-green'); 
+            width: 100%;
+            max-width: 650px; 
+        }
+        /* SCHEME NAME: Updated to use main green color */
+        .result-card h3 {
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            color: theme('colors.brand-green'); 
+        }
+        /* Similarity score color updated to green */
+        .similarity {
+            margin-top: 1rem;
+            font-weight: 600;
+            color: theme('colors.brand-green');
+        }
+
+        /* --- Chart Layout (Smaller and centered) --- */
+        .chart-container {
+            margin-top: 3rem;
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            max-width: 700px; 
+            margin-left: auto; 
+            margin-right: auto; 
+            height: 450px; 
+        }
+        .chart-info {
+            text-align: center;
+            margin-top: 1rem;
+            color: gray;
+            font-size: 0.875rem;
+        }
+        .chart-container canvas {
+             max-height: 100%; 
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+
+    <div 
+        id="chart-data-source" 
+        data-labels="" 
+        data-data="" 
+        style="display: none;">
+    </div>
+
+    <!-- Navigation Bar - Green Theme -->
+    <nav class="w-full bg-white p-4 sm:px-8 shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <!-- Updated brand text color -->
+            <a href="/" class="text-2xl font-bold text-brand-green">PolicyNav.AI</a>
+            
+            <!-- Updated button colors to Green -->
+            <a href="/home" class="flex items-center gap-2 px-4 py-2 bg-green-100 text-brand-green-dark rounded-lg font-semibold hover:bg-green-200 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                    <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 0 1 1.414 0l7 7A1 1 0 0 1 17 11h-1v6a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-6H3a1 1 0 0 1-.707-1.707l7-7Z" clip-rule="evenodd" />
+                </svg>
+                Home
+            </a>
+        </div>
+    </nav>
+
+    <main class="w-full max-w-7xl mx-auto px-4 py-8 sm:py-12">
+        
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 text-center flex items-center justify-center gap-3">
+            <!-- Updated icon background color and icon color -->
+            <span class="p-2 bg-policy-green-light rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8 text-brand-green-dark">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.002 6.002 0 0 0 4.288 1.752m-4.288-1.752L8.25 10.5m1.5-4.499l.01.008.01.008A12.03 12.03 0 0 1 12 5.25c1.171 0 2.292.14 3.37.409l.01.008.01.008ZM21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+            </span>
+            Explore Global Healthcare Policies
+        </h1>
+
+        <div class="mt-8 max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center px-4 sm:px-0 gap-3">
+            
+            <form method="get" action="/healthcare" class="w-full sm:w-2/3 max-w-xl flex flex-col sm:flex-row gap-3">
+                <input 
+                    type="text" 
+                    name="query" 
+                    value="{{ query or '' }}" 
+                    placeholder="Search for Healthcare schemes..." 
+                    required
+                    class="flex-grow w-full px-5 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-green shadow-sm"
+                >
+                <button 
+                    type="submit" 
+                    class="w-full sm:w-auto bg-brand-green text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-brand-green-dark transition-colors flex items-center justify-center gap-2"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd" />
+                    </svg>
+                    Search
+                </button>
+            </form>
+
+            
+            <!-- Download Link - NOW STYLED with Green Theme -->
+            <a href="/download_policies_csv?category=healthcare&query={{ query or '' }}" 
+               download="healthcare_policies.csv"
+               class="w-full sm:w-auto bg-policy-green-light text-brand-green-dark font-semibold px-6 py-3 rounded-lg shadow-sm hover:bg-emerald-200 transition-colors flex items-center justify-center gap-2">
+                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                  <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.21a.75.75 0 0 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.154V2.75Z" />
+                  <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
+                </svg>
+                Download (CSV)
+            </a>
+        </div>
+
+<!-- Templated Results section (Dynamic content based on 'results' variable) -->
+{% if results %}
+<div class="results-container">
+    {% for r in results[:3] %}
+    <div class="result-card">
+        <h3>{{ r.scheme_name }}</h3>
+        <p><b>Scheme Availability:</b> India</p>
+        <p><b>Target Beneficiaries:</b> People Below Poverty Line (BPL) or low-income families</p>
+        <p><b>Benefits:</b> {{ r.benefits }}</p>
+        <p><b>Eligibility:</b> {{ r.eligibility }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ===== Charts Section (Loaded independently of results data) ===== -->
+<div class="chart-container">
+  <canvas id="barChart"></canvas>
+  <div class="chart-info">Bar chart showing the number of beneficiaries under the top 7 major healthcare policies (Millions).</div>
+</div>
+
+<div class="chart-container">
+  <canvas id="lineChart"></canvas>
+  <div class="chart-info">Line chart depicting year-wise growth in global healthcare coverage (%).</div>
+</div>
+
+<script>
+window.onload = function() {
+    // Green color palette for the charts
+    const greenColors = [
+        '#059669', // Emerald 600
+        '#10B981', // Emerald 500
+        '#34D399', // Emerald 400
+        '#6EE7B7', // Emerald 300
+        '#A7F3D0', // Emerald 200
+        '#D1FAE5', // Emerald 100
+        '#065F46'  // Emerald 800 (Darker accent)
+    ];
+
+    // ======== Bar Chart (UPDATED to Top 7 Policies) ========
+    new Chart(document.getElementById('barChart'), {
+        type: 'bar',
+        data: {
+            labels: [
+                'UHC Goal Reach', 
+                'Ayushman Bharat PM-JAY', 
+                'Medicare/Medicaid (US)', 
+                'NHS (UK)', 
+                'Germany Statutory HI', 
+                'Canada Public Care', 
+                'Taiwan NHI'
+            ],
+            datasets: [{
+                label: 'Beneficiaries (in millions)',
+                data: [150, 120, 140, 67, 74, 38, 23],
+                backgroundColor: greenColors, // Use all 7 colors
+                borderColor: greenColors[6], 
+                borderWidth: 1
+            }]
+        },
+        options: { 
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                title: { display: true, text: 'Top 7 Global Healthcare Schemes by Beneficiary Count (Millions)', color: '#374151'}
+            },
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: 'Beneficiaries (Millions)', color: '#374151' } },
+                x: { title: { display: true, text: 'Healthcare Scheme', color: '#374151' } }
+            }
+        }
+    });
+
+    // ======== Line Chart ========
+    new Chart(document.getElementById('lineChart'), {
+        type: 'line',
+        data: {
+            labels: ['2019', '2020', '2021', '2022', '2023'],
+            datasets: [{
+                label: 'Healthcare Coverage Growth (%)',
+                data: [45, 50, 60, 75, 85],
+                borderColor: '#10B981', // Brand Green
+                backgroundColor: 'rgba(16, 185, 129, 0.2)', // Light green fill
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: { 
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: { display: true, text: 'Global Healthcare Coverage Trend', color: '#374151'}
+            },
+            scales: {
+                y: { beginAtZero: true, max: 100, title: { display: true, text: 'Coverage (%)', color: '#374151' } },
+                x: { title: { display: true, text: 'Year', color: '#374151' } }
+            }
+        }
+    });
+}
+</script>
+    </main>
+</body>
+</html>

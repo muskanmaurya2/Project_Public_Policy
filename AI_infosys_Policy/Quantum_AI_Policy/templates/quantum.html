@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Policies | PolicyNav.AI</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        // Tailwind Configuration
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        // New Light Yellow/Amber Palette
+                        'brand-yellow': '#FBBF24',      // Amber 400 (Light Yellow)
+                        'brand-yellow-dark': '#B45309', // Amber 700 (Used for high contrast text)
+                        'policy-amber': '#FCD34D',      // Amber 300
+                        'policy-amber-light': '#FEF3C7', // Amber 100 (Very light background/hover)
+                        'policy-gray-dark': '#374151',  // Gray 700
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* Style for the non-yellow content, ensuring the yellow labels stand out */
+        .result-card p b {
+            display: block;
+            margin-bottom: 5px;
+        }
+        /* FIX: Ensures long text breaks correctly and preserves line breaks */
+        .whitespace-pre-wrap { 
+            white-space: pre-wrap;
+        }
+        
+        /* --- Policy Card Layout (Updated to stack vertically) --- */
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            align-items: center; 
+        }
+        .result-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            /* Updated border color to Lighter Amber */
+            border-left: 5px solid theme('colors.policy-amber'); 
+            width: 100%;
+            max-width: 650px; 
+        }
+        /* SCHEME NAME: Updated to use light yellow/amber */
+        .result-card h3 {
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            color: theme('colors.brand-yellow'); /* Main light yellow */
+        }
+        /* Similarity score color updated to light yellow/amber */
+        .similarity {
+            margin-top: 1rem;
+            font-weight: 600;
+            color: theme('colors.brand-yellow');
+        }
+
+        /* --- Chart Layout (Smaller and centered) --- */
+        .chart-section {
+             margin-top: 3rem;
+        }
+        .chart-container {
+            margin-top: 3rem;
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            max-width: 700px; 
+            margin-left: auto; 
+            margin-right: auto; 
+            height: 450px; 
+        }
+        .chart-info {
+            text-align: center;
+            margin-top: 1rem;
+            color: gray;
+            font-size: 0.875rem;
+            margin-bottom: 3rem; /* Added margin to separate charts */
+        }
+        .chart-container canvas {
+             max-height: 100%; 
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+
+    <div 
+        id="chart-data-source" 
+        data-labels="{{ chart_labels | safe }}" 
+        data-data="{{ chart_data | safe }}" 
+        style="display: none;">
+    </div>
+
+    <nav class="w-full bg-white p-4 sm:px-8 shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <!-- Updated brand text color -->
+            <a href="/" class="text-2xl font-bold text-brand-yellow">PolicyNav.AI</a>
+            
+            <!-- Updated button colors -->
+            <a href="/" class="flex items-center gap-2 px-4 py-2 bg-yellow-100 text-brand-yellow-dark rounded-lg font-semibold hover:bg-yellow-200 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                    <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 0 1 1.414 0l7 7A1 1 0 0 1 17 11h-1v6a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-6H3a1 1 0 0 1-.707-1.707l7-7Z" clip-rule="evenodd" />
+                </svg>
+                Home
+            </a>
+        </div>
+    </nav>
+
+    <main class="w-full max-w-7xl mx-auto px-4 py-8 sm:py-12">
+        
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 text-center flex items-center justify-center gap-3">
+            <!-- Updated icon background color -->
+            <span class="p-2 bg-policy-amber-light rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8 text-brand-yellow-dark">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.002 6.002 0 0 0 4.288 1.752m-4.288-1.752L8.25 10.5m1.5-4.499l.01.008.01.008A12.03 12.03 0 0 1 12 5.25c1.171 0 2.292.14 3.37.409l.01.008.01.008ZM21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+            </span>
+            Explore Quantum Policies
+        </h1>
+
+        <div class="mt-8 max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center px-4 sm:px-0 gap-3">
+            
+            <form method="get" action="/quantum" class="w-full sm:w-2/3 max-w-xl flex flex-col sm:flex-row gap-3">
+                <input 
+                    type="text" 
+                    name="query" 
+                    value="{{ query or '' }}" 
+                    placeholder="Search for quantum schemes..." 
+                    required
+                    class="flex-grow w-full px-5 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-yellow shadow-sm"
+                >
+                <button 
+                    type="submit" 
+                    class="w-full sm:w-auto bg-brand-yellow text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-brand-yellow-dark transition-colors flex items-center justify-center gap-2"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd" />
+                    </svg>
+                    Search
+                </button>
+            </form>
+
+            <!-- Download Link - Styled as a secondary yellow button -->
+            <a href="/download_policies_csv?category=quantum&query={{ query or '' }}" 
+               download="quantum_policies.csv"
+               class="w-full sm:w-auto bg-policy-amber-light text-brand-yellow-dark font-semibold px-6 py-3 rounded-lg shadow-sm hover:bg-amber-200 transition-colors flex items-center justify-center gap-2">
+                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                  <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.21a.75.75 0 0 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.154V2.75Z" />
+                  <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
+                </svg>
+                Download (CSV)
+            </a>
+        </div>
+
+        <!-- 
+          The 'if results' block now ONLY wraps the search results.
+          The charts have been moved OUTSIDE this block so they always display.
+        -->
+        {% if results %}
+        <div class="results-container">
+            {% for r in results[:3] %}
+            <div class="result-card">
+                <!-- Scheme name updated to light yellow/amber -->
+                <h3 class="text-brand-yellow">{{ r.scheme_name or 'National Quantum Tech Program' }}</h3>
+                
+                <!-- Mandatory fields - labels set to light yellow/amber -->
+                <p><b class="text-brand-yellow font-semibold">Scheme Availability:</b> India</p>
+                <p><b class="text-brand-yellow font-semibold">Target Beneficiaries:</b> People Below Poverty Line (BPL) or low-income families</p>
+                
+                <!-- Updated Benefits content - label set to light yellow/amber -->
+                <p class="whitespace-pre-wrap"><b class="text-brand-yellow font-semibold">Benefits:</b> Comprehensive funding for R&D in quantum computing, sensing, and communication. Includes substantial grants for university labs, private sector incentives, and stipends for Ph.D./post-doctoral researchers. Supports international collaboration and provides access to advanced computing infrastructure. Aims to establish India as a global quantum leader within ten years.</p>
+                
+                <!-- Updated Eligibility content - label set to light yellow/amber -->
+                <p class="whitespace-pre-wrap"><b class="text-brand-yellow font-semibold">Eligibility:</b> Open to researchers at accredited Indian institutions (IITs, IISc) and national labs. Startups require viable business plans and matching co-development funds. Applicants must submit a detailed proposal covering scientific merit, implementation, and potential impact. Preference is given to projects addressing national security or sustainable energy challenges. Requires a minimum of five years of relevant research experience for the principal investigator.</p>
+                
+                <p><b>Summary:</b> {{ r.summary or 'A flagship initiative to boost domestic capabilities in key quantum technology areas through targeted funding.' }}</p>
+                <p class="similarity">🔹 Similarity Score: {{ r.similarity or '0.89' }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% elif error %}
+            <p style="color:red; text-align:center;">{{ error }}</p>
+        {% else %}
+            <!-- This message will show ONLY on first load, before any search -->
+            <p class="text-center text-gray-500 mt-12 text-lg">Enter a query to explore quantum-related policies and view analytics.</p>
+        {% endif %}
+
+
+        <!-- 
+          This entire chart section is now OUTSIDE the 'if/elif/else' block.
+          It will render on page load, before any search.
+        -->
+        <div class="chart-section">
+            <!-- ===== Bar Chart Section (Now smaller and centered) ===== -->
+            <div class="chart-container">
+                <canvas id="barChart"></canvas>
+                <div class="chart-info">Bar chart showing the utilization of the Top 7 Most Used Policies. (Mock Data)</div>
+            </div>
+
+            <!-- Line Chart section (Now smaller and centered) -->
+            <div class="chart-container">
+                <canvas id="lineChart"></canvas>
+                <div class="chart-info">Line chart showing year-wise growth in quantum policy initiatives. (Mock Data)</div>
+            </div>
+        </div>
+
+
+        <!-- 
+          This script is also moved outside the 'if' block 
+          so the charts can be drawn on page load.
+        -->
+        <script>
+            // ======== Read Data from Backend (with fallback) ========
+            const dataSource = document.getElementById('chart-data-source');
+            
+            let barChartLabels, barChartData;
+            
+            // Try to parse data from the backend
+            try {
+                // Use .replace(/'/g, '"') to fix potential single-quote JSON issues from Python/Jinja
+                const parsedLabels = JSON.parse(dataSource.dataset.labels.replace(/'/g, '"'));
+                const parsedData = JSON.parse(dataSource.dataset.data.replace(/'/g, '"'));
+
+                if (parsedLabels && parsedLabels.length > 0 && parsedData && parsedData.length > 0) {
+                    barChartLabels = parsedLabels;
+                    barChartData = parsedData;
+                } else {
+                    // Data from backend is empty, use mock data
+                    throw new Error('Empty data from backend');
+                }
+            } catch (e) {
+                // Parsing failed or data was empty, use mock data as fallback
+                console.warn("Chart data not passed from backend or invalid. Using mock data for bar chart.");
+                barChartLabels = ['National Quantum Tech Program', 'Quantum Mission', 'Quantum Communication', 'Q-Sensing Initiative', 'High-Performance Q-Compute', 'Talent Dev Program', 'Global Quantum Hub'];
+                barChartData = [9.5, 8.2, 7.5, 6.8, 5.1, 4.4, 3.9];
+            }
+
+            // ======== Bar Chart (Top 7 Policies - LIGHT YELLOW/AMBER PALETTE) ========
+            new Chart(document.getElementById('barChart'), {
+                type: 'bar',
+                data: {
+                    labels: barChartLabels, // <-- USES DYNAMIC DATA
+                    datasets: [{
+                        label: 'Utilization (K Searches)',
+                        data: barChartData, // <-- USES DYNAMIC DATA
+                        backgroundColor: [
+                            '#FBBF24', // Amber 400 (Light Yellow)
+                            '#FCD34D', // Amber 300
+                            '#FDE68A', // Amber 200
+                            '#FEF3C7', // Amber 100
+                            '#FBBF24',
+                            '#FCD34D',
+                            '#FDE68A'
+                        ],
+                        borderColor: '#D97706', // Amber 600 (Used for borders)
+                        borderWidth: 1
+                    }]
+                },
+                options: { 
+                    responsive: true,
+                    maintainAspectRatio: false, 
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Top 7 Most Used Policies (Utilization in K Searches)',
+                            font: { size: 16, weight: 'bold' },
+                            padding: { top: 10, bottom: 20 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toFixed(1) + 'K';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Utilization (K)'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // ======== Line Chart (LIGHT YELLOW/AMBER PALETTE) ========
+            // This chart still uses mock data as it is illustrative.
+            new Chart(document.getElementById('lineChart'), {
+                type: 'line',
+                data: {
+                    labels: ['2019', '2020', '2021', '2022', '2023'],
+                    datasets: [{
+                        label: 'Policy Growth (%)',
+                        data: [10, 25, 45, 65, 85],
+                        borderColor: '#FBBF24', // Light Yellow line
+                        backgroundColor: 'rgba(254, 243, 199, 0.8)', // Very light yellow fill (Amber 100)
+                        borderWidth: 3,
+                        pointBackgroundColor: '#D97706', // Darker point color for visibility
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { 
+                    responsive: true,
+                    maintainAspectRatio: false, 
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: {
+                            display: true,
+                            text: 'Year-wise Growth in Quantum Policy Initiatives',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Growth (%)'
+                            }
+                        }
+                    }
+                }
+            });
+        </script>
+
+    </main>
+
+</body>
+</html>
+

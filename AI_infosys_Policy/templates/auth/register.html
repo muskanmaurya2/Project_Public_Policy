@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - PolicyNav.AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-light: #f8fafc; --bg-dark: #f1f5f9; --card-bg: #ffffff;
+            --primary: #4f46e5; --primary-hover: #4338ca; --text-dark: #1e293b;
+            --text-light: #64748b; --border-color: #e2e8f0;
+            --shadow-color-dark: rgba(0, 0, 0, 0.05);
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image: linear-gradient(to top, var(--bg-dark), var(--bg-light));
+            margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh;
+        }
+        .login-container { /* Re-using login-container class */
+            background-color: var(--card-bg); border-radius: 16px;
+            box-shadow: 0 4px 6px -1px var(--shadow-color-dark), 0 2px 4px -2px var(--shadow-color-dark);
+            border: 1px solid var(--border-color); padding: 2.5rem 3rem;
+            width: 100%; max-width: 400px; text-align: center;
+        }
+        .login-container h1 { font-size: 2rem; font-weight: 700; margin: 0 0 0.5rem 0; }
+        .login-container h1 span { color: var(--primary); }
+        .login-container p { font-size: 1rem; color: var(--text-light); margin-bottom: 2rem; }
+        .form-group { text-align: left; margin-bottom: 1.5rem; }
+        .form-group label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; }
+        .form-group input {
+            width: 100%; padding: 0.75rem 1rem; font-size: 1rem;
+            font-family: 'Poppins', sans-serif; border: 1px solid var(--border-color);
+            border-radius: 8px; box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-group input:focus {
+            outline: none; border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        .login-button { /* Re-using login-button class */
+            width: 100%; padding: 0.85rem 1.75rem; font-size: 1rem; color: white;
+            border: none; border-radius: 12px; cursor: pointer; font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            background: linear-gradient(45deg, #6366f1, var(--primary));
+            box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.3);
+        }
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.4);
+        }
+        .register-link { /* Re-using register-link class */
+             margin-top: 2rem; font-size: 0.9rem; color: var(--text-light); 
+        }
+        .register-link a { color: var(--primary); font-weight: 600; text-decoration: none; }
+        .register-link a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>PolicyNav<span>.AI</span></h1>
+        <p>Create your new account.</p>
+
+        <form action="/register" method="post">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+             <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="login-button">Create Account</button>
+        </form>
+
+        <div class="register-link">
+            Already have an account? <a href="/">Login here</a>
+        </div>
+    </div>
+</body>
+</html>
